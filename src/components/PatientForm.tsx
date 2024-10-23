@@ -1,20 +1,59 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { usePatientStore } from "../store/store.ts";
+import { DraftPatient } from "../types/index";
 import Error from "./Error";
+import { toast } from "react-toastify";
 
 export default function PatientForm() {
+  //   const { addPatient } = usePatientStore();
+  //   const addPatient = usePatientStore((state) => state.addPatient);
+  const { addPatient, activeId, patients, updatePatient } = usePatientStore();
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+    reset,
+    setValue,
+  } = useForm<DraftPatient>();
 
-  function registerPatient() {
-    console.log("nuevo paciente");
+  function registerPatient(data: DraftPatient) {
+    let message;
+    if (activeId.length > 0) {
+      updatePatient(data);
+      message = "Paciente actualizado correctamente";
+    } else {
+      addPatient(data);
+      message = "Paciente registrado correctamente";
+    }
+
+    toast.success(message, {
+      position: "top-center",
+      theme: "light",
+    });
+    //reset form data
+    reset();
   }
-  console.log(errors);
+
+  useEffect(() => {
+    if (activeId.length > 0) {
+      const activePatient = patients.filter(
+        (patient) => patient.id === activeId
+      )[0];
+
+      setValue("name", activePatient.name);
+      setValue("caretaker", activePatient.caretaker);
+      setValue("date", activePatient.date);
+      setValue("symptoms", activePatient.symptoms);
+      setValue("email", activePatient.email);
+    }
+  }, [activeId]);
+
   return (
     <div className="md:w-1/2 lg:w-2/5 mx-5">
-      <h2 className="font-black text-3xl text-center">Seguimiento Pacientes</h2>
+      <h2 className="font-black text-3xl text-center">
+        Seguimiento Pacientes {activeId}
+      </h2>
 
       <p className="text-lg mt-5 text-center mb-10">
         Añade Pacientes y {""}
@@ -63,9 +102,7 @@ export default function PatientForm() {
               },
             })}
           />
-          {errors.caretaker && (
-            <Error>{errors.caretaker?.message?.toString()}</Error>
-          )}
+          {errors.caretaker && <Error>{errors.caretaker?.message}</Error>}
         </div>
 
         <div className="mb-5">
@@ -115,9 +152,7 @@ export default function PatientForm() {
               required: "Los síntomas es obligatorio",
             })}
           ></textarea>
-          {errors.symptoms && (
-            <Error>{errors.symptoms?.message?.toString()}</Error>
-          )}
+          {errors.symptoms && <Error>{errors.symptoms?.message}</Error>}
         </div>
 
         <input
