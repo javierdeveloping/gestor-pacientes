@@ -1,14 +1,14 @@
-import { create } from "zustand";
-import { DraftPatient, Patient } from "../types";
 import { v4 as uuidv4 } from "uuid";
-import { createJSONStorage, devtools, persist } from "zustand/middleware";
+import { create } from "zustand";
+import { devtools, persist } from "zustand/middleware";
+import { DraftPatient, Patient } from "../types";
 
 export type PatientsState = {
   patients: Patient[];
   activeId: Patient["id"];
   addPatient: (data: DraftPatient) => void;
   deletePatient: (id: Patient["id"]) => void;
-  getPatientById: (id: Patient["id"]) => Patient;
+  getPatientById: (id: Patient["id"]) => void;
   updatePatient: (data: DraftPatient) => void;
 };
 
@@ -19,7 +19,7 @@ function createPatient(patient: DraftPatient): Patient {
 export const usePatientStore = create<PatientsState>()(
   devtools(
     persist(
-      function (set, get) {
+      function (set) {
         return {
           patients: [],
           activeId: "",
